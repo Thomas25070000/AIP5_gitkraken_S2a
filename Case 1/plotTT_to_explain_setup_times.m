@@ -7,7 +7,7 @@ catch
 end
 
 
-headway = timetable.finish(3) - timetable.start(end-2)+ 12 + 9 + 6 + 9;
+headway = timetable.finish(end) - timetable.start(1)+ 12 + 9 + 6 + 9;
 timetable = delayTrain(timetable, 102, headway, 1);
 
 line = [];
@@ -15,9 +15,10 @@ ll = 0;
 blocks = [];
 bb = 0;
 % 
-blocksections.distance(7) = 8000;
-blocksections.distance(8) = 9600;
-blocksections.distance(9) = 11200;
+% 
+% blocksections.distance(7) = 8000;
+% blocksections.distance(8) = 9600;
+% blocksections.distance(9) = 11200;
 
 % Generate the structure with lines and blocks, based on the timetable we
 % have.
@@ -25,13 +26,19 @@ blocksections.distance(9) = 11200;
 % Run over the complete timetable!
 for ee = 1:size(timetable,1)
     
+    switch timetable.train_type{ee}
+        case 'R'
+            C = 'blue';
+        case 'IC'
+            C = 'black';
+        case 'THA'
+            C = 'red';
+    end
     switch timetable.direction(ee)
         case {2, 12}
-            C = [238 130 144]/255;
-            color = [139 0 0]/255;
+            color = [0 0 0];
         case {3, 13}
-            C = [135 206 250]/255;
-            color = [0 0 139]/255;
+            color = 'b';
     end
 
     block = timetable.blocksection(ee);
@@ -217,7 +224,7 @@ box off
 % Add the y-axis label with adjusted font properties
 ylabel('Time', 'FontWeight', 'bold', 'FontSize', 12);
 
-title('Set-up time case 4','Fontsize', 20);
+title('Set-up time case 3','Fontsize', 20);
 
 
 % Show the closed area
