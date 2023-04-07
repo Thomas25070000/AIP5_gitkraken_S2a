@@ -7,13 +7,17 @@ catch
 end
 
 
-headway = timetable.finish(5) - timetable.start(10);
-timetable = delayTrain(timetable, 212, headway, 1);
+headway = timetable.finish(8) - timetable.start(3);
+timetable = delayTrain(timetable, 112, headway, 1);
 
 line = [];
 ll = 0;
 blocks = [];
 bb = 0;
+
+blocksections.distance(7) = 8000;
+blocksections.distance(8) = 9600;
+blocksections.distance(9) = 11200;
 
 % Generate the structure with lines and blocks, based on the timetable we
 % have.
@@ -21,43 +25,16 @@ bb = 0;
 % Run over the complete timetable!
 for ee = 1:size(timetable,1)
     
-    switch timetable.train_type{ee}
-        case 'R'
-            C = 'blue';
-        case 'IC'
-            C = 'black';
-        case 'THA'
-            C = 'red';
-    end
     switch timetable.direction(ee)
         case {2, 12}
-            color = [0 0 0];
+            C = [238 130 144]/255;
+            color = [139 0 0]/255;
         case {3, 13}
-            color = 'b';
+            C = [135 206 250]/255;
+            color = [0 0 139]/255;
     end
 
     block = timetable.blocksection(ee);
-    
-    % First, draw the line towards the previous value if it is the same
-    % train line.
-    try 
-        if timetable.train_id(ee) == timetable.train_id(ee-1)
-            % Connect the arrival at this one and the departure from the
-            % previous one. Mainly to detect errors!
-            ll = ll+1;
-            if timetable.direction(ee) == 12 | timetable.direction(ee) == 13
-                line(ll).X1 = blocksections.distance(block) ...
-                    - blocksections.length(block);
-            else
-                line(ll).X1 = blocksections.distance(block);
-            end
-            line(ll).X2 = line(ll).X1;
-            line(ll).Y1 = timetable.departure(ee-1);
-            line(ll).Y2 = timetable.arrival(ee);  
-            line(ll).Color = C;
-            line(ll).Color = color;
-        end
-    end
     
     % Now the event on this section
     ll = ll+1;
@@ -76,6 +53,7 @@ for ee = 1:size(timetable,1)
     line(ll).Color = color;
     
     % Also the block
+    
     bb = bb+1;
     if timetable.direction(ee) == 12 | timetable.direction(ee) == 13
         blocks(bb).left = line(ll).X1;
@@ -131,11 +109,7 @@ if include_blocks
         p = patch([blocks(bb).left  blocks(bb).right blocks(bb).right blocks(bb).left ],...  
             [blocks(bb).bottom blocks(bb).bottom blocks(bb).top blocks(bb).top],blocks(bb).Color);
         p.FaceAlpha = 0.3;
-        p.EdgeAlpha = 0;
-        
-%         r = rectangle('Position',[blocks(bb).left, blocks(bb).bottom, width, height],...
-%             'EdgeColor',blocks(bb).Color,'FaceColor',blocks(bb).Color);
-        
+        p.EdgeAlpha = 0;  
     end
 end
 
@@ -243,7 +217,7 @@ box off
 % Add the y-axis label with adjusted font properties
 ylabel('Time', 'FontWeight', 'bold', 'FontSize', 12);
 
-title('Set-up time case 1','Fontsize', 20);
+title('Set-up time case 2','Fontsize', 20);
 
 
 % Show the closed area
