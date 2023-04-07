@@ -1,7 +1,7 @@
 clear all;
 close all;
 
-pathSubfunctions = '/Users/thomasvandendorpe/Dropbox/Thesis/Code/AIP5/Case 1/Subfunctions';
+pathSubfunctions = '/Users/thomasvandendorpe/Dropbox/Thesis/Code/AIP5_gitkraken_S2a/Case 1/Subfunctions';
 addpath(genpath(pathSubfunctions));
 addpath(genpath(pwd));
 saveFigures = 1;
@@ -139,92 +139,94 @@ for rr = 2
         include_blocks = 1;
 %         [line, blocks] = plotTT_2(hour_tt, allblocks, settings, 'hour', include_blocks, firstTime);
 %         [line, blocks] = plotTT_3(hour_tt, allblocks, settings, 'hour', include_blocks, firstTime);
-       [line, blocks] = plotTT(hour_tt, allblocks, settings, 'hour', include_blocks, firstTime);
+        [line, blocks] =plotTT_to_explain_setup_times(hour_tt, allblocks, settings, 'hour', include_blocks, firstTime);
 
-        if saveFigures
-	        figname = [settings.general.caseName ' ' settings.general.subName ' original - 1h.fig'];
-	        savefig(gcf,figname);
-        end
-%         [line, blocks] = plotTT(complete_tt, allblocks, settings, 'complete', include_blocks, firstTime);
+%        [line, blocks] = plotTT(hour_tt, allblocks, settings, 'hour', include_blocks, firstTime);
+% 
 %         if saveFigures
-% 	        figname = [settings.general.caseName ' ' settings.general.subName ' original - complete.fig'];
+% 	        figname = [settings.general.caseName ' ' settings.general.subName ' original - 1h.fig'];
 % 	        savefig(gcf,figname);
 %         end
-        
-        regular.TT = timetable;
+% %         [line, blocks] = plotTT(complete_tt, allblocks, settings, 'complete', include_blocks, firstTime);
+% %         if saveFigures
+% % 	        figname = [settings.general.caseName ' ' settings.general.subName ' original - complete.fig'];
+% % 	        savefig(gcf,figname);
+% %         end
+%         
+%         regular.TT = timetable;
 
 
-		%% Apply blockage
-		% Due to the blockage, the running times will increase, which make the
-		% timetable (probably) infeasible.
-
-
-		% Update the running times
-		timetable = updateRunningTimes_v2(timetable, runningtimes, settings);
-        full_timetable = updateRunningTimes_v2(complete_tt,complete_runningtimes,settings);
-        regular.TT = timetable;
-
-        % Create headway matrix for full section
-		[minHW, trains] = createHeadwayMatrixClosedSection(full_timetable, allblocks, settings);
-		[minHW_reg] = createHeadwayMatrixRegularTT(full_timetable, allblocks, settings);
-		
-		settings.clearingtimes = clearingtimes;
-
-		regular.HW = minHW_reg;
-        
-        [new_timetable, measures, statistics] = scheduleFIFO(full_timetable, allblocks, settings)
-        
-                
-		% Create headway matrix for closed section
-% 		[minHW, trains] = createHeadwayMatrixClosedSection(timetable, blocksections, settings);
-% 		[minHW_reg] = createHeadwayMatrixRegularTT(regular.TT, blocksections, settings);
-% 		
-% 		settings.clearingtimes = clearingtimes;
+% 		%% Apply blockage
+% 		% Due to the blockage, the running times will increase, which make the
+% 		% timetable (probably) infeasible.
 % 
-% 		regular.HW = minHW_reg;
-       % [new_timetable, measures, statistics] = scheduleFIFO(timetable, blocksections, settings)
-        
-         % Create headway matrix for full section
+% 
+% 		% Update the running times
+% 		timetable = updateRunningTimes_v2(timetable, runningtimes, settings);
+%         full_timetable = updateRunningTimes_v2(complete_tt,complete_runningtimes,settings);
+%         regular.TT = timetable;
+% 
+%         % Create headway matrix for full section
 % 		[minHW, trains] = createHeadwayMatrixClosedSection(full_timetable, allblocks, settings);
 % 		[minHW_reg] = createHeadwayMatrixRegularTT(full_timetable, allblocks, settings);
 % 		
 % 		settings.clearingtimes = clearingtimes;
 % 
 % 		regular.HW = minHW_reg;
-    %    [new_timetable, solu, measures, statistics] = modelCase1_singleMachine(full_timetable, regular, allblocks, trains, minHW, settings, complete_runningtimes)
-
-
-        [minHW, trains] = createHeadwayMatrixClosedSection(full_timetable, allblocks, settings);
-%		[minHW_reg] = createHeadwayMatrixRegularTT(regular.TT, blocksections, settings);
-		
-		settings.clearingtimes = clearingtimes;
-
-%		regular.HW = minHW_reg;
-                
-
-        [timetable, solu] = modelCase1_singleMachine_v2(full_timetable, allblocks, trains, minHW, settings)%         figname = 'Tienen - evening - FIFO - low vD';
-%         title('Tienen - evening - FIFO - low vD');
 %         
-		% Save the adjusted figure
-		if saveFigures
-			figname = [settings.general.caseName ' ' settings.general.subName ' adjusted.fig'];
-			savefig(gcf,figname);
-		end
-
-		% Save the statistics and measures.
-		if saveStats
-			statsname = [settings.general.caseName ' ' settings.general.subName ' adjusted - stats.mat'];
-			try
-				save(statsname,'settings','statistics','measures','new_timetable');
-			catch
-				disp('Statistics not generated, impossible to save them');
-			end
-		end
-		
-		% Write the statistics to Excel!
-		if saveStats
-			writeStatsToExcel_parameterVariation(filenameOutput, sheetOutput, settings, statistics);
-		end
+%         [new_timetable, measures, statistics] = scheduleFIFO(full_timetable, allblocks, settings)
+%         
+%                 
+% 		% Create headway matrix for closed section
+% % 		[minHW, trains] = createHeadwayMatrixClosedSection(timetable, blocksections, settings);
+% % 		[minHW_reg] = createHeadwayMatrixRegularTT(regular.TT, blocksections, settings);
+% % 		
+% % 		settings.clearingtimes = clearingtimes;
+% % 
+% % 		regular.HW = minHW_reg;
+%        % [new_timetable, measures, statistics] = scheduleFIFO(timetable, blocksections, settings)
+%         
+%          % Create headway matrix for full section
+% % 		[minHW, trains] = createHeadwayMatrixClosedSection(full_timetable, allblocks, settings);
+% % 		[minHW_reg] = createHeadwayMatrixRegularTT(full_timetable, allblocks, settings);
+% % 		
+% % 		settings.clearingtimes = clearingtimes;
+% % 
+% % 		regular.HW = minHW_reg;
+%     %    [new_timetable, solu, measures, statistics] = modelCase1_singleMachine(full_timetable, regular, allblocks, trains, minHW, settings, complete_runningtimes)
+% 
+% 
+%         [minHW, trains] = createHeadwayMatrixClosedSection(full_timetable, allblocks, settings);
+% %		[minHW_reg] = createHeadwayMatrixRegularTT(regular.TT, blocksections, settings);
+% 		
+% 		settings.clearingtimes = clearingtimes;
+% 
+% %		regular.HW = minHW_reg;
+%                 
+% 
+%         [timetable, solu] = modelCase1_singleMachine_v2(full_timetable, allblocks, trains, minHW, settings)%         figname = 'Tienen - evening - FIFO - low vD';
+% %         title('Tienen - evening - FIFO - low vD');
+% %         
+% 		% Save the adjusted figure
+% 		if saveFigures
+% 			figname = [settings.general.caseName ' ' settings.general.subName ' adjusted.fig'];
+% 			savefig(gcf,figname);
+% 		end
+% 
+% 		% Save the statistics and measures.
+% 		if saveStats
+% 			statsname = [settings.general.caseName ' ' settings.general.subName ' adjusted - stats.mat'];
+% 			try
+% 				save(statsname,'settings','statistics','measures','new_timetable');
+% 			catch
+% 				disp('Statistics not generated, impossible to save them');
+% 			end
+% 		end
+% 		
+% 		% Write the statistics to Excel!
+% 		if saveStats
+% 			writeStatsToExcel_parameterVariation(filenameOutput, sheetOutput, settings, statistics);
+% 		end
 		
     end
 

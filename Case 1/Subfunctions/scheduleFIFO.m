@@ -6,6 +6,8 @@ trains = unique(timetable.train_id);
 row = 0;
 t_before = settings.TT.blocktimes.setup;
 t_after = settings.TT.blocktimes.afterIC;
+disruption_dir = settings.disruption.direction;
+crossing_threshold = 120;
 for tt = 1:length(trains)
     train = trains(tt);
     TT_train = timetable(find(timetable.train_id == train),:);
@@ -74,49 +76,69 @@ last_common_block = 3;
 while tt <= Ntrains
     this = trains(tt);
     this_rows = find(newTT.train_id == this);
-    prev_rows = find(newTT.train_id == prev_scheduled);
-    if mod(prev_scheduled, 100) == mod(this, 100)
-        % Trains run in the same direction.
-        % Minimum headway time?
-        headway = max(max(newTT.finish(prev_rows) - newTT.start(this_rows)),0);
-        newTT = delayTrain(newTT, this, headway, 1);
-    end
-    if mod(prev_scheduled, 100)+mod(this, 100) == 5        
-        headway = max(max(newTT.finish(prev_rows(end-last_common_block:end)) - newTT.start(this_rows(end-last_common_block:end))),0);
-        newTT = delayTrain(newTT, this, headway, 1);
-    end
-    if mod(prev_scheduled, 100)+mod(this, 100) == 25        
-        headway = max(max(newTT.finish(prev_rows(1:last_common_block)) - newTT.start(this_rows(1:last_common_block))),0);
-        newTT = delayTrain(newTT, this, headway, 1);
-    end
-    if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 10
-        headway = max(newTT.finish(prev_rows(end)) - newTT.start(this_rows(1)),0);
-        newTT = delayTrain(newTT, this, headway, 1);
-    end
-    if (abs(mod(prev_scheduled, 100)-mod(this, 100)) == 9 || abs(mod(prev_scheduled, 100)-mod(this, 100)) == 11) ...
-            && (mod(prev_scheduled, 100)==2 || mod(prev_scheduled, 100) ==3)
-        headway = max(newTT.finish(prev_rows(end)) - newTT.start(this_rows(1)),0);
-        newTT = delayTrain(newTT, this, headway, 1);
-    end
-    if (abs(mod(prev_scheduled, 100)-mod(this, 100)) == 9 || abs(mod(prev_scheduled, 100)-mod(this, 100)) == 11) ...
-            && (mod(prev_scheduled, 100)==12 || mod(prev_scheduled, 100) ==13)
-        headway = max(newTT.finish(prev_rows(last_common_block)) - newTT.start(this_rows(end-last_common_block+1)),0);
-        newTT = delayTrain(newTT, this, headway, 1);
-    end
-    headway_print = headway
-    % Determine delay
-    exit = newTT.departure(this_rows(end));
-    delay = exit - departure(tt);
-    if delay >= settings.weights.cancel
-        % If the resulting delay is too high, cancelled it.
-        newTT.cancelled(this_rows) = 1;
-        orig_delays(tt) = 0;
-        new_delay(tt) = 0;
-    else
-        % Otherwise, this is the previous train for the next iteration.
-        prev_scheduled = this;
+    for prev_index = 1:tt-1
+        prev_scheduled = trains(prev_index);
+        prev_rows = find(newTT.train_id == prev_scheduled);
+        if mod(prev_scheduled, 100) == mod(this, 100)
+            % Trains run in the same direction.
+            % Minimum headway time?
+            headway = max(max(newTT.finish(prev_rows) - newTT.start(this_rows)),0);
+            newTT = delayTrain(newTT, this, headway, 1);
+        end
+        if mod(prev_scheduled, 100)+mod(this, 100) == 5        
+            headway = max(max(newTT.finish(prev_rows(end-last_common_block:end)) - newTT.start(this_rows(end-last_common_block:end))),0);
+            newTT = delayTrain(newTT, this, headway, 1);
+        end
+        if mod(prev_scheduled, 100)+mod(this, 100) == 25        
+            headway = max(max(newTT.finish(prev_rows(1:last_common_block)) - newTT.start(this_rows(1:last_common_block))),0);
+            newTT = delayTrain(newTT, this, headway, 1);
+            if newTT.start(this_rows(last_common_block))-newTT.finish(prev_rows(last_common_block))<crossing_threshold
+                extra_delay = crossing_threshold - (newTT.start(this_rows(last_common_block))-newTT.finish(prev_rows(last_common_block)));
+                newTT = delayTrain(newTT,this,extra_delay,1);
+            end
+        end
+        if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 10 && mod(prev_scheduled,10) == mod(disruption_dir,10)
+            headway = max(newTT.finish(prev_rows(end)) - newTT.start(this_rows(1)),0);
+            newTT = delayTrain(newTT, this, headway, 1);
+        end
+        if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 10 && mod(prev_scheduled,10) ~= mod(disruption_dir,10)
+            headway = 0;
+            newTT = delayTrain(newTT, this, headway, 1);
+        end    
+        if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 11
+            headway = crossing_threshold;
+            newTT = delayTrain(newTT, this, headway, 1);
+        end
+        if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 9 && mod(prev_scheduled,100)==03
+            headway = max(newTT.finish(prev_rows(last_common_block)) - newTT.start(this_rows(end-last_common_block)),0);
+            newTT = delayTrain(newTT, this, headway, 1);
+        end
+        if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 9 && mod(prev_scheduled,100)==12
+            headway = max(newTT.finish(prev_rows(end)) - newTT.start(this_rows(1)),0);
+            newTT = delayTrain(newTT, this, headway, 1);
+        end        
+%         if (abs(mod(prev_scheduled, 100)-mod(this, 100)) == 9 || abs(mod(prev_scheduled, 100)-mod(this, 100)) == 11) ...
+%                 && (mod(prev_scheduled, 100)==12 || mod(prev_scheduled, 100) ==13)
+%             headway = max(newTT.finish(prev_rows(last_common_block)) - newTT.start(this_rows(end-last_common_block+1)),0);
+%             newTT = delayTrain(newTT, this, headway, 1);
+%         end
+        headway_print = headway
+        % Determine delay
+        exit = newTT.departure(this_rows(end));
+        delay = exit - departure(tt);
         orig_delays(tt) = delay;
         new_delay(tt) = exit - new_dep(tt);
+%         if delay >= settings.weights.cancel
+%             % If the resulting delay is too high, cancelled it.
+%             newTT.cancelled(this_rows) = 1;
+%             orig_delays(tt) = 0;
+%             new_delay(tt) = 0;
+%         else
+%             % Otherwise, this is the previous train for the next iteration.
+%             prev_scheduled = this;
+%             orig_delays(tt) = delay;
+%             new_delay(tt) = exit - new_dep(tt);
+%         end
     end
 
     tt = tt+1;
