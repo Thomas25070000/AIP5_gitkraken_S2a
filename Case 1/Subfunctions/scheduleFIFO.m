@@ -72,6 +72,8 @@ new_delay(tt) = 0;
 tt = 2;
 newTT.cancelled(1) = 0;
 last_common_block = 3;
+default_from_sander = 12 + 9 + 6 + 9;
+
 
 while tt <= Ntrains
     this = trains(tt);
@@ -90,31 +92,39 @@ while tt <= Ntrains
             newTT = delayTrain(newTT, this, headway, 1);
         end
         if mod(prev_scheduled, 100)+mod(this, 100) == 25        
-            headway = max(max(newTT.finish(prev_rows(1:last_common_block)) - newTT.start(this_rows(1:last_common_block))),0);
-            newTT = delayTrain(newTT, this, headway, 1);
             if newTT.start(this_rows(last_common_block))-newTT.finish(prev_rows(last_common_block))<crossing_threshold
                 extra_delay = crossing_threshold - (newTT.start(this_rows(last_common_block))-newTT.finish(prev_rows(last_common_block)));
                 newTT = delayTrain(newTT,this,extra_delay,1);
             end
         end
-        if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 10 && mod(prev_scheduled,10) == mod(disruption_dir,10)
-            headway = max(newTT.finish(prev_rows(end)) - newTT.start(this_rows(1)),0);
+        if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 10 && (mod(prev_scheduled,100) == mod(disruption_dir,100) || mod(this,100) == mod(disruption_dir,100))
+            headway = max(newTT.finish(prev_rows(end)) - newTT.start(this_rows(1)),0)+default_from_sander;
             newTT = delayTrain(newTT, this, headway, 1);
         end
-        if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 10 && mod(prev_scheduled,10) ~= mod(disruption_dir,10)
+        if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 10 && (mod(prev_scheduled,10) ~= mod(disruption_dir,10) || mod(this,100) ~= mod(disruption_dir,100))
             headway = 0;
             newTT = delayTrain(newTT, this, headway, 1);
         end    
         if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 11
-            headway = crossing_threshold;
-            newTT = delayTrain(newTT, this, headway, 1);
+            if mod(this, 100) == 2  
+                if newTT.start(this_rows(end-last_common_block+1))-newTT.finish(prev_rows(last_common_block))<crossing_threshold
+                    extra_delay = crossing_threshold - (newTT.start(this_rows(end-last_common_block+1))-newTT.finish(prev_rows(last_common_block)));
+                    newTT = delayTrain(newTT,this,extra_delay,1);
+                end
+            end
+            if mod(this, 100) == 13  
+                if newTT.start(this_rows(last_common_block))-newTT.finish(prev_rows(end-last_common_block+1))<crossing_threshold
+                    extra_delay = crossing_threshold - (newTT.start(this_rows(last_common_block))-newTT.finish(prev_rows(end-last_common_block+1)));
+                    newTT = delayTrain(newTT,this,extra_delay,1);
+                end
+            end
         end
         if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 9 && mod(prev_scheduled,100)==03
-            headway = max(newTT.finish(prev_rows(last_common_block)) - newTT.start(this_rows(end-last_common_block)),0);
+            headway = max(newTT.finish(prev_rows(end)) - newTT.start(this_rows(1)),0) + default_from_sander;
             newTT = delayTrain(newTT, this, headway, 1);
         end
         if abs(mod(prev_scheduled, 100)-mod(this, 100)) == 9 && mod(prev_scheduled,100)==12
-            headway = max(newTT.finish(prev_rows(end)) - newTT.start(this_rows(1)),0);
+            headway = max(newTT.finish(prev_rows(last_common_block)) - newTT.start(this_rows(end-last_common_block+1)),0) + default_from_sander;
             newTT = delayTrain(newTT, this, headway, 1);
         end        
 %         if (abs(mod(prev_scheduled, 100)-mod(this, 100)) == 9 || abs(mod(prev_scheduled, 100)-mod(this, 100)) == 11) ...
@@ -122,7 +132,6 @@ while tt <= Ntrains
 %             headway = max(newTT.finish(prev_rows(last_common_block)) - newTT.start(this_rows(end-last_common_block+1)),0);
 %             newTT = delayTrain(newTT, this, headway, 1);
 %         end
-        headway_print = headway
         % Determine delay
         exit = newTT.departure(this_rows(end));
         delay = exit - departure(tt);

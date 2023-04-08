@@ -7,7 +7,7 @@ catch
 end
 
 
-headway = timetable.finish(end) - timetable.start(1)+ 12 + 9 + 6 + 9;
+headway = round(timetable.finish(3) - timetable.start(end-2)+ 12 + 9 + 6 + 9);
 timetable = delayTrain(timetable, 102, headway, 1);
 
 line = [];
@@ -156,7 +156,7 @@ min_time = -120;
 
 xlim([0 11200]);
 %xlim([0 max(blocksections.distance(strcmp(blocksections.type,'S2')))]);
-ylim([min_time max_time]);
+ylim([min_time min_time+1800]);
 
 % % Get interesting axes!
 % ax = gca;
@@ -224,7 +224,7 @@ box off
 % Add the y-axis label with adjusted font properties
 ylabel('Time', 'FontWeight', 'bold', 'FontSize', 12);
 
-title('Set-up time case 3','Fontsize', 20);
+title('Set-up time case 4','Fontsize', 20);
 
 
 % Show the closed area
