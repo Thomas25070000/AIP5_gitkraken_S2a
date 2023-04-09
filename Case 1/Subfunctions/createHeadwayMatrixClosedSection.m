@@ -125,26 +125,30 @@ for ii = 1:length(trains)-1
             if direction(ii)>10
                 rows_ii = find(timetable.train_id == trains(ii));
                 t_all_ii = sum(timetable.running(rows_ii));
-                rows_jj = find(timetable.train_id == trains(jj)& ismember(timetable.blocksection, blocksections.id(blocksections.closed==1)));
-                t_closed_jj = sum(timetable.running(rows_jj));
-                first_jj = rows_jj(1);
+                rows_jj_closed = find(timetable.train_id == trains(jj)& ismember(timetable.blocksection, blocksections.id(blocksections.closed==1)));
+                rows_jj_open = find(timetable.train_id == trains(jj)& ismember(timetable.blocksection, blocksections.id(blocksections.closed==0)));
+                t_closed_jj = sum(timetable.running(rows_jj_closed));
+                t_open_jj = sum(timetable.running(rows_jj_open));
+                first_jj = rows_jj_open(1);
                 t_approach_jj = timetable.arrival(first_jj)-timetable.start(first_jj);
                 first_ii = rows_ii(1);
                 t_approach_ii = timetable.arrival(first_ii)-timetable.start(first_ii);
-                minHW(ii,jj) = t_all_ii + t_closed_jj + default_from_sander+t_approach_jj;
+                minHW(ii,jj) = t_all_ii + t_open_jj + default_from_sander+t_approach_jj;
                 minHW(jj,ii) = t_closed_jj + default_from_sander+t_approach_ii;
             end
             if direction(ii)<10
-                rows_ii = find(timetable.train_id == trains(ii)& ismember(timetable.blocksection, blocksections.id(blocksections.closed==1)));
-                t_closed_ii = sum(timetable.running(rows_ii));
+                rows_ii_closed = find(timetable.train_id == trains(ii)& ismember(timetable.blocksection, blocksections.id(blocksections.closed==1)));
+                rows_ii_open = find(timetable.train_id == trains(ii)& ismember(timetable.blocksection, blocksections.id(blocksections.closed==0)));
+                t_closed_ii = sum(timetable.running(rows_ii_closed));
+                t_open_ii = sum(timetable.running(rows_ii_open));
                 rows_jj = find(timetable.train_id == trains(jj));
                 t_all_jj = sum(timetable.running(rows_jj));
-                first_ii = rows_ii(1);
+                first_ii = rows_ii_open(1);
                 t_approach_ii = timetable.arrival(first_ii)-timetable.start(first_ii);
                 first_jj = rows_jj(1);
                 t_approach_jj = timetable.arrival(first_jj)-timetable.start(first_jj);                
                 minHW(ii,jj) = t_closed_ii + default_from_sander+t_approach_jj;
-                minHW(jj,ii) = t_all_jj + t_closed_ii + default_from_sander+t_approach_ii;
+                minHW(jj,ii) = t_all_jj + t_open_ii + default_from_sander+t_approach_ii;
             end
         end
         if abs(direction(ii)-direction(jj))==9 || abs(direction(ii)-direction(jj))==11

@@ -196,15 +196,15 @@ for rr = 2
 
 
         [minHW, trains] = createHeadwayMatrixClosedSection(full_timetable, allblocks, settings);
-%		[minHW_reg] = createHeadwayMatrixRegularTT(regular.TT, blocksections, settings);
+		[minHW_reg] = createHeadwayMatrixRegularTT(regular.TT, blocksections, settings);
 		
 		settings.clearingtimes = clearingtimes;
 
-%		regular.HW = minHW_reg;
+		regular.HW = minHW_reg;
                 
 
- %       [timetable, solu] = modelCase1_singleMachine_v2(full_timetable, allblocks, trains, minHW, settings)%         figname = 'Tienen - evening - FIFO - low vD';
-%         title('Tienen - evening - FIFO - low vD');
+       [timetable, solu] = modelCase1_singleMachine_v2(full_timetable, allblocks, trains, minHW, settings)%         figname = 'Tienen - evening - FIFO - low vD';
+        title('Tienen - evening - FIFO - low vD');
 %         
 		% Save the adjusted figure
 		if saveFigures

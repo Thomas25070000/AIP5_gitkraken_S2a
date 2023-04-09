@@ -188,8 +188,8 @@ type = 'complete';
 include_blocks = 1;
 directions = [02 03 12 13];
 %     directions = 0;
-[line_new, blocks_new] = plotTT_new_2(timetable, blocksections, settings, type, include_blocks, directions);
-[line_new, blocks_new] = plotTT_new_3(timetable, blocksections, settings, type, include_blocks, directions);
+%[line_new, blocks_new] = plotTT_new_2(timetable, blocksections, settings, type, include_blocks, directions);
+%[line_new, blocks_new] = plotTT_new_3(timetable, blocksections, settings, type, include_blocks, directions);
 [line_new, blocks_new] = plotTT_full(timetable, blocksections, settings, type, include_blocks, directions);
 
 
